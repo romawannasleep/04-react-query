@@ -7,8 +7,8 @@ import SearchBar from "../SearchBar/SearchBar";
 import Pagination from "../Pagination/Pagination";
 import css from "./App.module.css";
 import { fetchMovies } from "../../services/movieService";
-import { useState } from "react";
 import MovieModal from "../MovieModal/MovieModal";
+import { useEffect, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 export default function App() {
@@ -26,6 +26,17 @@ export default function App() {
   const movies = data?.results ?? [];
   const totalPages = data?.total_pages ?? 0;
   const hasSearched = query.trim() !== "";
+
+  useEffect(() => {
+    if (
+      hasSearched &&
+      !isLoading &&
+      !isError &&
+      movies.length === 0
+    ) {
+      toast.error(`No movies found for "${query}"`);
+    }
+  }, [hasSearched, isLoading, isError, movies.length, query]);
   const handleSearch = (searchQuery: string) => {
     setQuery(searchQuery);
     setCurrentPage(1);
@@ -51,9 +62,6 @@ export default function App() {
             />
           )}
         </>
-      )}
-      {hasSearched && movies.length === 0 && !isLoading && !isError && (
-        toast.error(`No movies found for "${query}"`)
       )}
       {selectedMovie && (
         <MovieModal onClose={closeModal} movie={selectedMovie} />
